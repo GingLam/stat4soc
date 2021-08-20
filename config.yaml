@@ -17,7 +17,7 @@ imaging:
   quality: 99
 
 params:
-  description: An accessibility-friendly Hugo theme, ported from the [original Cupper](https://github.com/ThePacielloGroup/cupper) project.
+  description: 社会科学统计软件教学网页（教改项目“嵌入开源可视化技术的定量方法类课程设计与研究”最终成果）
   homeMetaContent: An accessibility-friendly Hugo theme, ported from the original Cupper project.
   footer: © 2020 - 2021 网页获[南京财经大学](http://www.nufe.edu.cn/)教改课题一般项目（编号：JGY20053）资助
   # For more date formats see https://gohugo.io/functions/format/
