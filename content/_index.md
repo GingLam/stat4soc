@@ -3,9 +3,8 @@ date: "2017-06-26T18:27:58+01:00"
 title: Home
 ---
 
-{{< blockquote author="Carl Jung" >}}
+{{< blockquote author="纳尔逊 · 曼德拉（Nelson Mandela）" >}}
 “教育是你可以用来改变世界的最有力的武器（Education is the most powerful weapon which you can use to change the world）”。
-——纳尔逊 · 曼德拉（Nelson Mandela）
 {{< /blockquote >}}
 
 作为一名大学教师，我把课堂看作是推助学生心智成长的孵化器。 因此，我的教学目标是:
