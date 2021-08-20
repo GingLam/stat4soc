@@ -1,7 +1,7 @@
-baseURL: https://example.com
+baseURL: https://stat4soc.netlify.app/
 languageCode: en-us
 defaultContentLanguage: en
-title: Cupper
+title: 林 景
 theme: "cupper-hugo-theme"
 googleAnalytics: UA-123456789-1
 disqusShortname: yourdiscussshortname
