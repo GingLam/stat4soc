@@ -3,14 +3,9 @@ date: "2014-04-09"
 title: About
 ---
 
-Hugo is the **world’s fastest framework for building websites**. It is written in Go.
+我所认同的社会统计学分析的哲学：
 
-It makes use of a variety of open source projects including:
+{{< blockquote >}} “在最短的时间内，用最少的笔墨，在最小的空间里，表达出最多的想法，这些想法直指数据的真相。（the viewer the greatest number of ideas, in the shortest time, with the least ink, in the smallest space, and which tells the truth about data’）”。
 
-* https://github.com/russross/blackfriday
-* https://github.com/alecthomas/chroma
-* https://github.com/muesli/smartcrop
-* https://github.com/spf13/cobra
-* https://github.com/spf13/viper
+——爱德华 · 图福特（Edward Tufte） {{< /blockquote >}}
 
-Learn more and contribute on [GitHub](https://github.com/gohugoio).
