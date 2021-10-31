@@ -23,8 +23,8 @@ title: 简介
  <div class="timeline">
   <div class="container left">
     <div class="content">
-      <h2>2021-10-31</h2>
-      <p>Version 0.10 平台上线，提供12节社会统计学SPSS语法和操作指南</p>
+      <h4>2021-10-31 Version 0.10</h4>
+      <p>教学平台上线，提供12节社会统计学SPSS语法和操作指南</p>
     </div>
   </div>
 </div> 
