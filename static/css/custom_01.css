@@ -1,3 +1,27 @@
 .your-custom-class-01 {
   display: block;
 }
+
+html {
+font-size: calc(1em + 0.33vw);
+font-family: Arial, Helvetica Neue, sans-serif;
+line-height: 1.5;
+line-height: 1.8;
+color: #111;
+background-color: #fefefe;
+}
+h1,
+h2,
+h3,
+h4 {
+font-family: Miriam Libre, serif;
+line-height: 1.125;
+letter-spacing: 2px;
+}
+p + p {
+margin-top: 1rem;
+}
+.logo {
+border: 0;
+font-size: 1.5rem;
+}
