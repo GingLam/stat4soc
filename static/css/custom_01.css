@@ -10,6 +10,11 @@ line-height: 1.8;
 color: #111;
 background-color: #fefefe;
 }
+.header .logo-wrapper .logo {
+	position: relative;
+    font-size: 20px;
+    line-height: 68px;
+}
 h1,
 h2,
 h3,
