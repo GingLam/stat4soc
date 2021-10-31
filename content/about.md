@@ -1,6 +1,6 @@
 ---
-date: "2014-04-09"
-title: About
+date: "2021-10-01"
+title: 关于
 ---
 
 我所认同的统计分析哲学：
@@ -9,3 +9,18 @@ title: About
 
 ——爱德华 · 图福特（Edward Tufte） {{< /blockquote >}}
 
+
+ <div class="timeline">
+  <div class="container left">
+    <div class="content">
+      <h2>2017</h2>
+      <p>Lorem ipsum..</p>
+    </div>
+  </div>
+  <div class="container right">
+    <div class="content">
+      <h2>2016</h2>
+      <p>Lorem ipsum..</p>
+    </div>
+  </div>
+</div> 
