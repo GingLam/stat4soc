@@ -17,7 +17,7 @@ imaging:
   quality: 99
 
 params:
-  description: 社会科学统计软件教学平台
+  description: 社会统计学教学平台 Ver.0.10
   homeMetaContent: An accessibility-friendly Hugo theme, ported from the original Cupper project.
   footer: © 2020 - 2021 网页获[南京财经大学](http://www.nufe.edu.cn/)教改课题一般项目（编号：JGY20053）资助
   # For more date formats see https://gohugo.io/functions/format/
