@@ -15,6 +15,7 @@ title: 简介
 
 #### 参考书目：
 
-* 唐启明. 量化数据分析:通过社会研究检验想法[M]. 社会科学文献出版社, 2012.
-* McCormick K, Salcedo J. SPSS statistics for dummies[M]. John Wiley & Sons, 2020.
-* te Grotenhuis M, Visscher C. How to use SPSS syntax: An overview of common commands[M]. Sage, 2014.
+* 唐启明. 量化数据分析:通过社会研究检验想法[M]. 北京: 社会科学文献出版社, 2012.
+* 谢宇. 社会学方法与定量研究[M]. 北京: 社会科学文献出版社, 2012.
+* McCormick K, Salcedo J. SPSS statistics for dummies[M]. New Jersey: John Wiley & Sons, 2020.
+* te Grotenhuis M, Visscher C. How to use SPSS syntax: An overview of common commands[M]. London: Sage, 2014.
