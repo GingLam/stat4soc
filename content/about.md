@@ -23,7 +23,7 @@ title: 关于
 ___
 
 
-#### 平台重要更新日志
+#### 平台更新日志
  <div class="timeline">
   <div class="container left">
     <div class="content">
