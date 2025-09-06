@@ -28,6 +28,8 @@ ___
  <div class="timeline">
   <div class="container left">
     <div class="content">
+      <h4>2025-08-22 Version 1.00</h4>
+      <p>全面修订语法讲义，增加语法解释知识点，补充操作技巧</p>  
       <h4>2022-08-27 Version 0.30</h4>
       <p>增加案例，补充图解，修复个别语法bug</p>  
       <h4>2022-04-03 Version 0.20</h4>
