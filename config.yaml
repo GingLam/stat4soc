@@ -21,7 +21,7 @@ params:
   homeMetaContent: An accessibility-friendly Hugo theme, ported from the original Cupper project.
   footer: © 2020 - 2025 网页获[南京财经大学](http://www.nufe.edu.cn/)教改课题一般项目（编号：JGY20053）资助
   # For more date formats see https://gohugo.io/functions/format/
-  dateFormat: Jan 2, 2021
+  dateFormat: "Jan 2, 2006"
   codePenUser: someUser
   katex: true
   hideHeaderLinks: false
