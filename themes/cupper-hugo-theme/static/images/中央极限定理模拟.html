@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中央极限定理演示 - 优化版</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e1e4e8;
+        }
+        h1 {
+            color: #1a365d;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .subtitle {
+            color: #4a5568;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        /* 左侧控制面板 */
+        .control-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            flex: 1;
+            min-width: 300px;
+            max-width: 340px;
+            height: fit-content;
+        }
+        /* 右侧图表大容器 */
+        .charts-wrapper {
+            flex: 3;
+            min-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        /* 单个图表的边框容器 (新增优化) */
+        .chart-frame {
+            background: white;
+            border: 1px solid #e2e8f0; /* 参考参数边框颜色 */
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: 374px; /* 固定高度确保一致性 */
+        }
+        .chart-title {
+            text-align: center; /* 完美居中 */
+            margin-bottom: 5px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .control-group {
+            margin-bottom: 20px;
+        }
+        .control-title {
+            color: #2d3748;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .slider-container {
+            margin-bottom: 12px;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: #4a5568;
+        }
+        .slider-value {
+            font-weight: 600;
+            color: #3182ce;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 5px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            accent-color: #3182ce;
+        }
+        .distribution-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .distribution-btn {
+            padding: 8px;
+            background: #edf2f7;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            color: #4a5568;
+        }
+        .distribution-btn:hover {
+            background: #e2e8f0;
+        }
+        .distribution-btn.active {
+            background: #3182ce;
+            color: white;
+            font-weight: 500;
+        }
+        .simulation-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button.action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        #start-btn {
+            background: #3182ce;
+            color: white;
+        }
+        #start-btn:hover {
+            background: #2b6cb0;
+        }
+        #reset-btn {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        #reset-btn:hover {
+            background: #cbd5e0;
+        }
+        .stats-container {
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .stats-title {
+            text-align: center;
+            margin-bottom: 12px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .stat-card {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #718096;
+            margin-bottom: 2px;
+        }
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a202c;
+        }
+        .chart-area {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+        #population-chart, #sampling-chart {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .explanation {
+            /* 样式调整以匹配图表边框 */
+            width: 100%;
+            padding: 15px;
+            background: #ebf8ff;
+            border-radius: 8px;
+            border-left: 4px solid #3182ce;
+            border: 1px solid #e2e8f0; /* 增加边框使其与上方图表一致 */
+            border-left: 4px solid #3182ce; /* 保持左侧强调 */
+            font-size: 0.9rem;
+            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .counter {
+            background: #3182ce;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: block;
+            text-align: center;
+            margin-top: 12px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .fit-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        /* 优化后的拟合线按钮 */
+        .fit-btn {
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #cbd5e0;
+            font-weight: 500;
+        }
+        .fit-btn:hover {
+            background: #cbd5e0;
+            border-color: #a0aec0;
+        }
+        .fit-btn.active {
+            background: #3182ce;
+            color: white;
+            border-color: #2b6cb0;
+        }
+        
+        /* 坐标轴样式优化 */
+        .tick text {
+            fill: #718096;
+            font-size: 11px;
+        }
+        .domain, .tick line {
+            stroke: #cbd5e0;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e4e8;
+            font-size: 16px;
+            color: #718096;
+            width: 100%;
+        }
+
+        @media (max-width: 1100px) {
+            .container {
+                flex-direction: column;
+            }
+            .control-panel {
+                max-width: 100%;
+            }
+            .charts-wrapper {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>中央极限定理演示</h1>
+        <p class="subtitle">无论总体分布如何，样本均值的抽样分布随着样本量增加而趋向正态分布</p>
+    </div>
+
+    <div class="container">
+        <!-- 左侧控制面板 -->
+        <div class="control-panel">
+            <div class="control-group">
+                <h3 class="control-title">总体分布类型</h3>
+                <div class="distribution-buttons">
+                    <button class="distribution-btn active" data-dist="normal">正态分布</button>
+                    <button class="distribution-btn" data-dist="uniform">均匀分布</button>
+                    <button class="distribution-btn" data-dist="exponential">指数分布</button>
+                    <button class="distribution-btn" data-dist="bimodal">双峰分布</button>
+                    <button class="distribution-btn" data-dist="skewed">右偏分布</button>
+                    <button class="distribution-btn" data-dist="discrete">离散分布</button>
+                </div>
+
+                <!-- 新增：总体参数设置 -->
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>总体均值 (μ)</span>
+                        <span class="slider-value" id="pop-mean-value">0</span>
+                    </div>
+                    <input type="range" id="pop-mean-slider" min="-100" max="100" value="0">
+                </div>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>总体标准差 (σ)</span>
+                        <span class="slider-value" id="pop-std-value">15</span>
+                    </div>
+                    <input type="range" id="pop-std-slider" min="1" max="100" value="15">
+                </div>
+            </div>
+        
+            <div class="control-group">
+                <h3 class="control-title">抽样设置</h3>
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>样本大小 (n)</span>
+                        <span class="slider-value" id="sample-size-value">30</span>
+                    </div>
+                    <input type="range" id="sample-size" min="2" max="500" value="30">
+                </div>
+            
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>抽样速度</span>
+                        <span class="slider-value" id="speed-value">中等</span>
+                    </div>
+                    <input type="range" id="speed" min="1" max="10" value="5">
+                </div>
+            </div>
+        
+            <div class="simulation-controls">
+                <button id="start-btn" class="action-btn">开始抽样</button>
+                <button id="reset-btn" class="action-btn">重置</button>
+            </div>
+        
+            <div class="stats-container">
+                <h3 class="stats-title">总体与抽样分布参数</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">总体均值(μ)</div>
+                        <div class="stat-value" id="population-mean">0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">总体标准差(σ)</div>
+                        <div class="stat-value" id="population-std">1.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">抽样分布均值</div>
+                        <div class="stat-value" id="sample-mean">0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">标准误(SE)</div>
+                        <div class="stat-value" id="standard-error">0.00</div>
+                    </div>
+                </div>
+                <div class="counter">已抽取样本: <span id="sample-count">0</span></div>
+            
+                <div class="fit-controls">
+                    <!-- 仅保留样本拟合线按钮 -->
+                    <button class="fit-btn" id="sample-fit-btn">显示正态拟合曲线</button>
+                </div>
+            </div>
+        </div>
+    
+        <!-- 右侧图表区域 -->
+        <div class="charts-wrapper">
+            <!-- 总体分布图 -->
+            <div class="chart-frame">
+                <h3 class="chart-title">总体分布</h3>
+                <div class="chart-area">
+                    <svg id="population-chart"></svg>
+                </div>
+            </div>
+        
+            <!-- 样本均值分布图 -->
+            <div class="chart-frame">
+                <h3 class="chart-title">样本均值分布</h3>
+                <div class="chart-area">
+                    <svg id="sampling-chart"></svg>
+                </div>
+            </div>
+
+            <div class="explanation">
+                <strong>中央极限定理说明：</strong> 无论总体分布形态如何，当我们从总体中反复抽取样本量为 n 的样本，并计算每个样本的均值，这些样本均值的分布会随着样本量 n 的增加而趋近于正态分布。该分布的均值等于总体均值 μ，标准差等于总体标准差 σ 除以 √n（即标准误）。
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚版权 -->
+    <div class="footer-copyright">
+        © 2024 Jing Lin. All Rights Reserved. | Privacy Policy | linjing@nufe.edu.cn
+    </div>
+
+    <script>
+        // 配置和状态
+        const config = {
+            // 边距优化：减小边距，让图表更贴近边框
+            margin: { top: 15, right: 15, bottom: 35, left: 45 },
+            sampleCount: 0,
+            maxSamples: 2000,
+            sampling: false,
+            speed: 5,
+            sampleSize: 30,
+            distribution: 'normal',
+            // 新增总体参数
+            popMean: 0,
+            popStd: 15,
+            populationData: [],
+            sampleMeans: [],
+            showSampleFit: false
+        };
+    
+        // 初始化图表
+        function initCharts() {
+            // 获取容器实际大小来设置SVG大小
+            const popContainer = document.querySelector('.chart-frame .chart-area');
+            const width = popContainer.clientWidth;
+            const height = popContainer.clientHeight;
+
+            // 移除现有SVG内容
+            d3.select("#population-chart").selectAll("*").remove();
+            d3.select("#sampling-chart").selectAll("*").remove();
+        
+            // 设置SVG属性
+            d3.select("#population-chart")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", `0 0 ${width} ${height}`);
+        
+            d3.select("#sampling-chart")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", `0 0 ${width} ${height}`);
+        }
+
+        // 窗口大小改变时重绘
+        window.addEventListener('resize', () => {
+            if(!config.sampling) {
+                initCharts();
+                drawPopulationDistribution();
+                drawSamplingDistribution();
+            }
+        });
+    
+        // 生成总体数据
+        function generatePopulation() {
+            const size = 10000;
+            let data = [];
+            
+            // 获取当前的设置值
+            const meanVal = config.popMean;
+            const stdVal = config.popStd;
+        
+            switch(config.distribution) {
+                case 'normal':
+                    // 使用滑条设置的均值和标准差
+                    for (let i = 0; i < size; i++) {
+                        data.push(d3.randomNormal(meanVal, stdVal)());
+                    }
+                    break;
+                case 'uniform':
+                    // 均匀分布：尽量围绕均值
+                    // 范围大概设置为 [mean - std*1.732, mean + std*1.732] 以保持类似的方差感，
+                    // 但为了简单直观，这里固定宽度，以mean为中心
+                    const width = stdVal * 2; // 简单缩放
+                    for (let i = 0; i < size; i++) {
+                        data.push(d3.randomUniform(meanVal - width, meanVal + width)());
+                    }
+                    break;
+                case 'exponential':
+                    // 指数分布通常由 lambda 决定，mean = 1/lambda. 
+                    // 这里为了演示，如果不强制数学严谨对应滑条，就用标准形态
+                    // 或者我们可以简单地生成标准指数分布然后平移
+                    for (let i = 0; i < size; i++) {
+                        data.push(d3.randomExponential(1)());
+                    }
+                    break;
+                case 'bimodal':
+                    // 双峰分布 (两个正态分布的混合)
+                    for (let i = 0; i < size; i++) {
+                        if (Math.random() < 0.5) {
+                            data.push(d3.randomNormal(meanVal - stdVal, stdVal/2)());
+                        } else {
+                            data.push(d3.randomNormal(meanVal + stdVal, stdVal/2)());
+                        }
+                    }
+                    break;
+                case 'skewed':
+                    // 右偏分布 (对数正态)
+                    for (let i = 0; i < size; i++) {
+                        data.push(d3.randomLogNormal(0, 0.6)() * stdVal/2 + meanVal);
+                    }
+                    break;
+                case 'discrete':
+                    // 离散分布
+                    const baseValues = [1, 2, 3, 8, 9, 10];
+                    // 简单的平移处理
+                    for (let i = 0; i < size; i++) {
+                        const index = Math.floor(Math.random() * baseValues.length);
+                        data.push(baseValues[index] + meanVal);
+                    }
+                    break;
+            }
+        
+            config.populationData = data;
+            updatePopulationStats();
+            drawPopulationDistribution();
+        }
+    
+        // 更新总体统计信息
+        function updatePopulationStats() {
+            const mean = d3.mean(config.populationData);
+            const std = d3.deviation(config.populationData);
+        
+            d3.select("#population-mean").text(mean.toFixed(2));
+            d3.select("#population-std").text(std.toFixed(2));
+        
+            // 更新标准误
+            const se = config.sampleMeans.length > 1 ? d3.deviation(config.sampleMeans) : 0;
+            d3.select("#standard-error").text(se.toFixed(3));
+        }
+    
+        // 绘制总体分布
+        function drawPopulationDistribution() {
+            const container = document.querySelector('.chart-frame .chart-area');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const margin = config.margin;
+            
+            const svg = d3.select("#population-chart")
+                .attr("width", width)
+                .attr("height", height);
+            
+            svg.selectAll("*").remove();
+        
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+        
+            const chart = svg.append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        
+            // 计算数据范围
+            const xMin = d3.min(config.populationData);
+            const xMax = d3.max(config.populationData);
+            // 增加一点padding防止贴边
+            const xPadding = (xMax - xMin) * 0.02; 
+        
+            const xScale = d3.scaleLinear()
+                .domain([xMin - xPadding, xMax + xPadding])
+                .range([0, chartWidth]);
+        
+            const histogram = d3.histogram()
+                .domain(xScale.domain())
+                .thresholds(xScale.ticks(50))
+                .value(d => d);
+        
+            const bins = histogram(config.populationData);
+        
+            const yMax = d3.max(bins, d => d.length);
+            const yScale = d3.scaleLinear()
+                .domain([0, yMax * 1.05]) // 顶部留白
+                .range([chartHeight, 0]);
+        
+            // 绘制柱形
+            chart.selectAll(".bar")
+                .data(bins)
+                .enter().append("rect")
+                .attr("x", d => xScale(d.x0))
+                .attr("y", d => yScale(d.length))
+                .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
+                .attr("height", d => chartHeight - yScale(d.length))
+                .attr("fill", "#3182ce")
+                .attr("opacity", 0.6);
+        
+            // X轴
+            const xAxis = d3.axisBottom(xScale).ticks(10);
+            chart.append("g")
+                .attr("transform", `translate(0, ${chartHeight})`)
+                .call(xAxis);
+        
+            // X轴标签
+            chart.append("text")
+                .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + 30})`)
+                .style("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("fill", "#4a5568")
+                .text("观测值 (x)");
+        
+            // Y轴
+            const yAxis = d3.axisLeft(yScale).ticks(5);
+            chart.append("g")
+                .call(yAxis);
+        
+            // Y轴标签
+            chart.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 12)
+                .attr("x", -chartHeight / 2)
+                .style("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("fill", "#4a5568")
+                .text("频数");
+        }
+    
+        // 绘制抽样分布
+        function drawSamplingDistribution() {
+            const container = document.querySelector('.chart-frame .chart-area');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const margin = config.margin;
+
+            const svg = d3.select("#sampling-chart")
+                .attr("width", width)
+                .attr("height", height);
+            
+            svg.selectAll("*").remove();
+        
+            const chartWidth = width - margin.left - margin.right;
+            const chartHeight = height - margin.top - margin.bottom;
+        
+            const chart = svg.append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        
+            // 动态计算范围：如果没有样本，使用总体均值附近
+            let xMin, xMax;
+            
+            if (config.sampleMeans.length > 0) {
+                xMin = d3.min(config.sampleMeans);
+                xMax = d3.max(config.sampleMeans);
+            } else {
+                // 初始状态，根据总体参数预设一个范围
+                const mean = config.popMean;
+                const std = config.popStd; // 粗略估计
+                xMin = mean - std;
+                xMax = mean + std;
+            }
+            
+            // 确保有一定宽度
+            if (xMin === xMax) {
+                xMin -= 1;
+                xMax += 1;
+            }
+
+            const xRange = xMax - xMin;
+            const xScale = d3.scaleLinear()
+                .domain([xMin - 0.1 * xRange, xMax + 0.1 * xRange])
+                .range([0, chartWidth]);
+        
+            const histogram = d3.histogram()
+                .domain(xScale.domain())
+                .thresholds(xScale.ticks(40))
+                .value(d => d);
+        
+            const bins = config.sampleMeans.length > 0 ? histogram(config.sampleMeans) : [];
+        
+            const yMax = bins.length > 0 ? d3.max(bins, d => d.length) : 10;
+            const yScale = d3.scaleLinear()
+                .domain([0, yMax * 1.1])
+                .range([chartHeight, 0]);
+        
+            // 绘制柱形
+            chart.selectAll(".bar")
+                .data(bins)
+                .enter().append("rect")
+                .attr("x", d => xScale(d.x0))
+                .attr("y", d => yScale(d.length))
+                .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - 1))
+                .attr("height", d => chartHeight - yScale(d.length))
+                .attr("fill", "#3182ce") // 区分颜色
+                .attr("opacity", 0.7);
+        
+            // 绘制正态拟合曲线
+            if (config.showSampleFit && config.sampleMeans.length > 1) {
+                const mean = d3.mean(config.sampleMeans);
+                const std = d3.deviation(config.sampleMeans);
+            
+                // 生成平滑曲线数据
+                const lineData = d3.range(xScale.domain()[0], xScale.domain()[1], (xScale.domain()[1] - xScale.domain()[0]) / 150);
+                
+                // 计算缩放因子，使概率密度函数匹配直方图的高度
+                // 面积 = 总数 * 组距
+                const binWidth = bins.length > 0 ? (bins[0].x1 - bins[0].x0) : 1;
+                const scaleFactor = config.sampleMeans.length * binWidth;
+
+                const normalLine = d3.line()
+                    .x(d => xScale(d))
+                    .y(d => yScale(normalDensity(d, mean, std) * scaleFactor))
+                    .curve(d3.curveBasis);
+            
+                chart.append("path")
+                    .datum(lineData)
+                    .attr("d", normalLine)
+                    .attr("fill", "none")
+                    .attr("stroke", "#000000")
+                    .attr("stroke-width", 2.5);
+            }
+        
+            // X轴
+            const xAxis = d3.axisBottom(xScale).ticks(10);
+            chart.append("g")
+                .attr("transform", `translate(0, ${chartHeight})`)
+                .call(xAxis);
+        
+            // X轴标签
+            chart.append("text")
+                .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + 30})`)
+                .style("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("fill", "#4a5568")
+                .text("样本均值 (x̄)");
+        
+            // Y轴
+            const yAxis = d3.axisLeft(yScale).ticks(5);
+            chart.append("g")
+                .call(yAxis);
+                
+            // Y轴标签
+            chart.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 12)
+                .attr("x", -chartHeight / 2)
+                .style("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("fill", "#4a5568")
+                .text("频数");
+        }
+    
+        // 正态分布密度函数
+        function normalDensity(x, mean, std) {
+            if (std === 0) return 0;
+            return (1 / (std * Math.sqrt(2 * Math.PI))) * 
+                   Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(std, 2)));
+        }
+    
+        // 执行一次抽样
+        function takeSample() {
+            if (!config.sampling || config.sampleCount >= config.maxSamples) {
+                config.sampling = false;
+                d3.select("#start-btn").text("开始抽样").style("background", "#3182ce");
+                return;
+            }
+        
+            // 随机抽取样本
+            const sample = [];
+            const population = config.populationData;
+            const nPop = config.populationData.length;
+        
+            for (let i = 0; i < config.sampleSize; i++) {
+                const index = Math.floor(Math.random() * nPop);
+                sample.push(population[index]);
+            }
+        
+            // 计算样本均值
+            const mean = d3.mean(sample);
+            config.sampleMeans.push(mean);
+        
+            // 更新统计信息
+            config.sampleCount++;
+            d3.select("#sample-count").text(config.sampleCount);
+        
+            const sampleMean = d3.mean(config.sampleMeans);
+            d3.select("#sample-mean").text(sampleMean.toFixed(3));
+        
+            // 更新标准误
+            const se = config.sampleMeans.length > 1 ? d3.deviation(config.sampleMeans) : 0;
+            d3.select("#standard-error").text(se.toFixed(3));
+        
+            // 重绘抽样分布
+            drawSamplingDistribution();
+        
+            // 安排下一次抽样
+            const delay = 1100 - (config.speed * 100);
+            setTimeout(takeSample, delay);
+        }
+    
+        // 重置模拟
+        function resetSimulation() {
+            config.sampling = false;
+            config.sampleCount = 0;
+            config.sampleMeans = [];
+        
+            d3.select("#start-btn").text("开始抽样").style("background", "#3182ce");
+            d3.select("#sample-count").text("0");
+            d3.select("#sample-mean").text("0.00");
+            d3.select("#standard-error").text("0.00");
+        
+            // 重新生成总体（以防参数改变）
+            generatePopulation();
+            drawSamplingDistribution();
+        }
+    
+        // 初始化应用
+        function initApp() {
+            initCharts();
+            generatePopulation();
+            drawSamplingDistribution();
+        
+            // 开始/暂停按钮
+            d3.select("#start-btn").on("click", function() {
+                config.sampling = !config.sampling;
+                const btn = d3.select(this);
+                if (config.sampling) {
+                    btn.text("暂停抽样").style("background", "#e53e3e"); // 红色表示暂停
+                    takeSample();
+                } else {
+                    btn.text("继续抽样").style("background", "#3182ce");
+                }
+            });
+        
+            d3.select("#reset-btn").on("click", resetSimulation);
+        
+            // 样本大小滑条
+            d3.select("#sample-size").on("input", function() {
+                const value = +this.value;
+                config.sampleSize = value;
+                d3.select("#sample-size-value").text(value);
+                // 样本大小改变不一定需要重置总体，但通常建议重置模拟以观察新n的效果
+                // 这里仅更新显示，用户需手动重置或继续
+            });
+        
+            // 速度滑条
+            d3.select("#speed").on("input", function() {
+                const value = +this.value;
+                config.speed = value;
+            
+                let speedText;
+                if (value < 3) speedText = "慢速";
+                else if (value < 7) speedText = "中等";
+                else speedText = "快速";
+            
+                d3.select("#speed-value").text(speedText);
+            });
+
+            // 新增：总体均值滑条
+            d3.select("#pop-mean-slider").on("input", function() {
+                const value = +this.value;
+                config.popMean = value;
+                d3.select("#pop-mean-value").text(value);
+                resetSimulation(); // 参数改变，必须重置
+            });
+
+            // 新增：总体标准差滑条
+            d3.select("#pop-std-slider").on("input", function() {
+                const value = +this.value;
+                config.popStd = value;
+                d3.select("#pop-std-value").text(value);
+                resetSimulation(); // 参数改变，必须重置
+            });
+        
+            // 分布选择按钮
+            d3.selectAll(".distribution-btn").on("click", function() {
+                d3.selectAll(".distribution-btn").classed("active", false);
+                d3.select(this).classed("active", true);
+                config.distribution = this.getAttribute("data-dist");
+                resetSimulation();
+            });
+        
+            // 样本拟合线按钮
+            d3.select("#sample-fit-btn").on("click", function() {
+                config.showSampleFit = !config.showSampleFit;
+                d3.select(this).classed("active", config.showSampleFit);
+                drawSamplingDistribution();
+            });
+        }
+    
+        // 页面加载完成后初始化
+        window.onload = initApp;
+    </script>
+</body>
+</html>
